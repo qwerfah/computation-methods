@@ -1,6 +1,6 @@
 classdef BitwiseSearch
     properties(Constant)
-        Eps (1,1) double = 0.0001;
+        Eps (1,1) double = 0.000001;
     end
         
     methods(Static)
