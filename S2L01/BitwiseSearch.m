@@ -19,17 +19,15 @@ classdef BitwiseSearch
             x1 = x0; f1 = f0;
             
             while abs(delta) > BitwiseSearch.Eps
-                X_S = [X_S, x0];
-                F_S = [F_S, f0];
+                X_S = [X_S, x1];
+                F_S = [F_S, f1];
                 
                 x0 = x1; f0 = f1;
                 x1 = x0 + delta;
                 f1 = f(x1);
                 
-                if (f1 < f0)
-                    if (x1 > a && x1 < b) 
-                        continue;
-                    end
+                if (f1 < f0 && x1 > a && x1 < b)
+                    continue;
                 end
                 
                 delta = -delta / 4.0;
