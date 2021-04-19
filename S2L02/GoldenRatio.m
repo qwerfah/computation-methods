@@ -5,20 +5,28 @@ classdef GoldenRatio
     end
     
     methods(Static)
-        function [X, F, X_S, F_S] = Solve(a, b, f)
+        function [X, F, A_S, B_S] = Solve(a, b, f)
             arguments
                 a (1,1) double
                 b (1,1) double
                 f function_handle
             end
             
-            X_S = []; F_S = [];
+            A_S = [];
+            B_S = [];
             
             l = b - a;
-            x1 = b - GoldenRatio.Tau * l; f1 = f(x1);
-            x2 = a + GoldenRatio.Tau * l; f2 = f(x2);
+            
+            x1 = b - GoldenRatio.Tau * l; 
+            x2 = a + GoldenRatio.Tau * l; 
+            
+            f1 = f(x1);
+            f2 = f(x2);
             
             while true
+                A_S = [A_S, a];
+                B_S = [B_S, b];
+                
                 if (f1 >= f2)
                     a = x1;
                     l = b - a;
@@ -38,7 +46,6 @@ classdef GoldenRatio
                     x1 = b - GoldenRatio.Tau * l;
                     f1 = f(x1);
                 end
-                
                 
                 if (l < 2 * GoldenRatio.Eps)
                     break; 

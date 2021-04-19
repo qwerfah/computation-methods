@@ -4,7 +4,7 @@ classdef BitwiseSearch
     end
         
     methods(Static)
-        function [X, F, X_S, F_S] = Solve(a, b, f)
+        function [X, F, X_S] = Solve(a, b, f)
             arguments
                 a (1,1) double
                 b (1,1) double
@@ -12,7 +12,6 @@ classdef BitwiseSearch
             end
             
             X_S = [];
-            F_S = [];
             
             delta = (b - a) / 4.0;
             
@@ -24,7 +23,6 @@ classdef BitwiseSearch
             
             while abs(delta) > BitwiseSearch.Eps
                 X_S = [X_S, x1];
-                F_S = [F_S, f1];
                 
                 x0 = x1; 
                 f0 = f1;
