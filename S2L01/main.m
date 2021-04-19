@@ -10,7 +10,10 @@ Y = f(X);
 
 X0
 F0
-length(X_S)
+N = length(X_S)
+
+i = 5;
+F_S - f(X_S)
 
 figure('Units', 'normalized', 'OuterPosition', [0 0 1 1]);
 title('Метод поразрядного поиска');
