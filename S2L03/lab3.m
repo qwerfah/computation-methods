@@ -22,12 +22,15 @@ function lab3()
     
     for i = 1:length(eps)
         % Вычисление точки минимума и минимума функции
-        [A, B, C, A_S, B_S] = GoldenRatio(0, 1, f, 0.01);
-        [X0, F0, A_S, B_S] = ParabolaMethod(A, B, C, f, eps(i));
+        [A, B, C, A_S, B_S, N1] = GoldenRatio(0, 1, f, 0.01);
+        [X0, F0, L_S, R_S, N2] = ParabolaMethod(A, B, C, f, eps(i));
+        
+        A_S = [A_S, L_S];
+        B_S = [B_S, R_S];
         
         % Вывод строки таблицы результатов вычислений
         fprintf("%2i | %5f | %2i | %5.5f | %5.5f\n", ...
-            i, eps(i), length(A_S) + 1, X0, F0);
+            i, eps(i), N1 + N2, X0, F0);
         
         % Вывод графика для данной точности
         ax = nexttile;
@@ -45,7 +48,7 @@ function lab3()
     
 end
 
-function [X, F, A_S, B_S] =  ParabolaMethod(a, b, c, f, eps)
+function [X, F, A_S, B_S, N] =  ParabolaMethod(a, b, c, f, eps)
     arguments
         a    double
         b    double
@@ -102,9 +105,10 @@ function [X, F, A_S, B_S] =  ParabolaMethod(a, b, c, f, eps)
     
     X = x_s;
     F = f_s;
+    N = n;
 end
 
-function [A, B, C, A_S, B_S] =  GoldenRatio(a, b, f, eps)
+function [A, B, C, A_S, B_S, N] =  GoldenRatio(a, b, f, eps)
     arguments
         a   double           % Левая граница отрезка
         b   double           % Левая граница отрезка
@@ -124,6 +128,8 @@ function [A, B, C, A_S, B_S] =  GoldenRatio(a, b, f, eps)
 
     f1 = f(x1);
     f2 = f(x2);
+    
+    n = 2;
 
     while true
         A_S = [A_S, a];
@@ -138,6 +144,7 @@ function [A, B, C, A_S, B_S] =  GoldenRatio(a, b, f, eps)
 
             x2 = a + tau * l;
             f2 = f(x2);
+            n = n + 1;
         else
             b = x2;
             l = b - a;
@@ -147,6 +154,7 @@ function [A, B, C, A_S, B_S] =  GoldenRatio(a, b, f, eps)
 
             x1 = b - tau * l;
             f1 = f(x1);
+            n = n + 1;
         end
 
         if (l < 2 * eps)
@@ -157,4 +165,5 @@ function [A, B, C, A_S, B_S] =  GoldenRatio(a, b, f, eps)
     A = a;
     B = b;
     C = (a + b) / 2;
+    N = n;
 end
