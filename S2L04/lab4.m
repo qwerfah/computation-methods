@@ -64,32 +64,33 @@ end
 
 % Разностная аппроксимация первой производной
 function df = df(f_prev, f_next, delta)
-    df = (f_next - f_prev) / 2 / delta;
+    df = (f_next - f_prev) / (2*delta);
 end
 
 % Разностная аппроксимация второй производной
 function d2f = d2f(f_prev, f_m, f_next, delta)
-    d2f = (f_next - 2*f_m + f_prev) / delta / delta;
+    d2f = (f_next - 2*f_m + f_prev) / (delta^2);
 end
 
 % Метод Ньютона
 function [X, F, X0, N] =  NeutonMethod(a, b, f, eps)
-    x0_prev = (a + b) / 1.3;
+    x0_prev = (a + b) / 3;
     x_prev = x0_prev - eps;
     x_next = x0_prev + eps;
     
     f_prev = f(x_prev);
     f_next = f(x_next);
     
-    d2ff = d2f(f_prev, f(x0_prev), f_next, x_next - x_prev);
+    d2ff = d2f(f_prev, f(x0_prev), f_next, eps);
 
     X0 = [x0_prev];
     N = 3; % Число обращений к целевой функции
     
     while true
         % Очередное приближение точки минимума
-        dff = df(f_prev, f_next, x_next - x_prev);
+        dff = df(f_prev, f_next, eps);
         x0 = x0_prev - dff / d2ff;
+        X0 = [X0, x0];
         
         % Проверка условия завершения поиска
         if abs(x0_prev - x0) <= eps
@@ -103,7 +104,6 @@ function [X, F, X0, N] =  NeutonMethod(a, b, f, eps)
         f_prev = f(x_prev);
         f_next = f(x_next);
         N = N + 2;
-        X0 = [X0, x0];
     end
     
     X = x0;

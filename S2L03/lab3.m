@@ -104,7 +104,8 @@ function [X, F, A_S, B_S, N] =  ParabolaMethod(a, b, f, eps)
     end
     
     X = x_curr;
-    F = f_s;
+    F = f(x_curr);
+    N = N + 1;
 end
 
 % Метод золотого сечения для выбора начальных точек метода парабол
