@@ -59,25 +59,34 @@ function [X, F, X0, N] =  NeutonMethod(a, b, f, eps)
         f    function_handle   % Целевая функция
         eps  double            % Точность
     end
-    f1 = f(a); f2 = f(b);
-    x0 = (a + b) / 2;
-    f0 = f(x0);
-    X0 = [x0];
-    n = 2; % Число обращений к целевой функции
     
-    % Повторять, пока отрезок или разность между старым
-    % и новым значением f(x*) не станет меньше точности
+    x0 = a; x_prev = a; x_next = b;
+    f_prev = f(x_prev); f_next = f(x_next); f_m = f(x0);
+    
+    % f1 = f(a); f2 = f(b); 
+    X0 = [x0];
+    n = 3; % Число обращений к целевой функции
+    
     while true
-        x0 = x0 - df(f1, f2, b - a) / d2f(f1, f0, f2, b - a);
-        f0 = f(x0);
+        dff = df(f_prev, f_next, abs(x_next - x_prev));
+        d2ff = d2f(f_prev, f_m, f_next, abs(x_next - x_prev));
+        x0 = x0 - dff / d2ff;
+        
+        f_prev = f_m;
+        f_m = f_next;
+        f_next = f(x0);
         n = n + 1;
-        X0 = [X0, x0];
-        if abs(df(f1, f2, b - a)) <= eps
+        
+        if abs(df(f_prev, f_next, abs(x_next - x_prev))) <= eps
             break;
         end
+        
+        
+        X0 = [X0, x0];
+        
     end
     
     X = x0;
-    F = f0;
+    F = f_next;
     N = n;
 end
