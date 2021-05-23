@@ -1,4 +1,4 @@
-function lab3()
+function lab4()
     f = @(x) (tan((x.^4 + 2.*x.^2 - 2.*x + 2^0.5 + 1) ./ 8) + ...
           sin((4.*x.^3 - 7.*x - 9) ./ (20.*x + 28)));
       
@@ -8,6 +8,7 @@ function lab3()
     eps = [0.01, 0.0001, 0.000001];
     
     NeutonMethodTable(f, a, b, X, Y, eps);
+    ComparisonTable(f, a, b, X, Y);
 end
 
 % Вывод сравнительной таблицы методов для точности 10^-6
@@ -22,6 +23,9 @@ function ComparisonTable(f, a, b, X, Y)
     
     fprintf(" # |      Метод     | N  |    x*   |   f(x*)\n");
     fprintf("---|----------------|----|---------|--------\n");
+    options = optimset('TolX', 1e-6);
+    [x, fval, r, output] = fminbnd(f, a, b, options);
+    x, fval, output
 end
 
 % Вывод таблицы и графиков для результатов работы метода Ньютона
@@ -90,27 +94,36 @@ function [X, F, X0, N] =  NeutonMethod(a, b, f, eps)
         eps  double            % Точность
     end
     
-    x0 = a; x_prev = a; x_next = b;
-    f_prev = f(x_prev); f_next = f(x_next); f_m = f(x0);
-    d2ff = d2f(f_prev, f_m, f_next, abs(x_next - x_prev));
+    x0_prev = (a + b) / 2; 
+    x_prev = x0_prev - eps; 
+    x_next = x0_prev + eps;
     
-    % f1 = f(a); f2 = f(b); 
-    X0 = [x0];
-    n = 3; % Число обращений к целевой функции
+    f_prev = f(x_prev); 
+    f_next = f(x_next);
+    
+    d2ff = d2f(f_prev, f(x0_prev), f_next, abs(x_next - x_prev));
+    
+    % f1 = f(a); f2 = f(b);
+    X0 = [x0_prev];
+    N = 3; % Число обращений к целевой функции
     
     while true
         dff = df(f_prev, f_next, abs(x_next - x_prev));
-        x0 = x0 - dff / d2ff;
+        x0 = x0_prev - dff / d2ff;
         
-        f_prev = f_m;
-        f_m = f_next;
-        f_next = f(x0);
-        n = n + 1;
-        
-        if abs(df(f_prev, f_next, abs(x_next - x_prev))) <= eps
+        if abs(x0_prev - x0) <= eps
             break;
         end
         
+        x_prev = x0 - eps; 
+        x_next = x0 + eps;
+        
+        f_prev = f(x_prev);
+        f_next = f(x_next);
+        
+        N = N + 2;
+        
+        x0_prev = x0;
         
         X0 = [X0, x0];
         
@@ -118,7 +131,6 @@ function [X, F, X0, N] =  NeutonMethod(a, b, f, eps)
     
     X = x0;
     F = f_next;
-    N = n;
 end
 
 % Метод поразрядного поиска
