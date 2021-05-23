@@ -22,9 +22,9 @@ function lab3()
     
     for i = 1:length(eps)
         % Вычисление точки минимума и минимума функции
-        [A, B, C, A_S, B_S, N1] = GoldenRatio(0, 1, f, 0.01);
-        [X0, F0, L_S, R_S, N2] = ParabolaMethod(A, B, C, f, eps(i));
-        
+        [X1, X2, X3, A_S, B_S, N1] = GoldenRatio(a, b, f);
+        [X0, F0, L_S, R_S, N2] = ParabolaMethod(X1, X2, X3, f, eps(i));
+
         A_S = [A_S, L_S];
         B_S = [B_S, R_S];
         
@@ -48,11 +48,11 @@ function lab3()
     
 end
 
-function [X, F, A_S, B_S, N] =  ParabolaMethod(a, b, c, f, eps)
+function [X, F, A_S, B_S, N] =  ParabolaMethod(x1, x2, x3, f, eps)
     arguments
-        a    double
-        b    double
-        c   double           % Левая граница отрезка
+        x1    double
+        x2    double
+        x3   double           % Левая граница отрезка
         f    function_handle   % Целевая функция
         eps  double            % Точность
     end
@@ -60,14 +60,14 @@ function [X, F, A_S, B_S, N] =  ParabolaMethod(a, b, c, f, eps)
     A_S = [];
     B_S = [];
     
-    x1 = a; x2 = c; x3 = b;
-    
     f1 = f(x1); f2 = f(x2); f3 = f(x3);
-    n = 3; % Число обращений к целевой функции
+    x_curr = x2;
+    f_s = f2;
+    N = 3; % Число обращений к целевой функции
     
     % Повторять, пока отрезок или разность между старым
     % и новым значением f(x*) не станет меньше точности
-    while (x3 - x1) > eps
+    while true
         A_S = [A_S, x1];
         B_S = [B_S, x3];
         
@@ -80,40 +80,44 @@ function [X, F, A_S, B_S, N] =  ParabolaMethod(a, b, c, f, eps)
         s31 = x3 - x1;
         
         % Вычисление точки минимума аппроксимирующей параболы
-        x_s = 0.5 * (f1*r23 + f2*r31 + f3*r12) / (f1*s23 + f2*s31 + f3*s12);
-        f_s = f(x_s); n = n + 1;
+        x_prev = x_curr;
+        x_curr = 0.5 * (f1*r23 + f2*r31 + f3*r12) / (f1*s23 + f2*s31 + f3*s12);
+        f_s = f(x_curr); N = N + 1;
+        
+        % Проверка условия окончания поиска
+        if (x3 - x1) <= eps || abs(x_prev - x_curr) <= eps
+            break;
+        end
         
         % Выбор тройки точек для следующей итерации
-        if x_s >= x2 && x_s <= x3
+        if x_curr >= x2 && x_curr <= x3
             if f_s <= f2
-                x1 = x2; x2 = x_s;
+                x1 = x2; x2 = x_curr;
                 f1 = f2; f2 = f_s;
             else
-                x3 = x_s;
+                x3 = x_curr;
                 f3 = f_s;
             end
-        elseif x_s >= x1 && x_s <= x2
+        elseif x_curr >= x1 && x_curr <= x2
             if f_s <= f2
-                x3 = x2; x2 = x_s;
+                x3 = x2; x2 = x_curr;
                 f3 = f2; f2 = f_s;
             else
-                x1 = x_s;
+                x1 = x_curr;
                 f1 = f_s;
             end
         end
     end
     
-    X = x_s;
+    X = x_curr;
     F = f_s;
-    N = n;
 end
 
-function [A, B, C, A_S, B_S, N] =  GoldenRatio(a, b, f, eps)
+function [X1, X2, X3, A_S, B_S, N] =  GoldenRatio(a, b, f)
     arguments
         a   double           % Левая граница отрезка
         b   double           % Левая граница отрезка
         f   function_handle  % Целевая функция
-        eps double           % Точность
     end
     
     tau = (5^0.5 - 1) / 2;
@@ -129,7 +133,7 @@ function [A, B, C, A_S, B_S, N] =  GoldenRatio(a, b, f, eps)
     f1 = f(x1);
     f2 = f(x2);
     
-    n = 2;
+    N = 2;
 
     while true
         A_S = [A_S, a];
@@ -144,7 +148,7 @@ function [A, B, C, A_S, B_S, N] =  GoldenRatio(a, b, f, eps)
 
             x2 = a + tau * l;
             f2 = f(x2);
-            n = n + 1;
+            N = N + 1;
         else
             b = x2;
             l = b - a;
@@ -154,16 +158,20 @@ function [A, B, C, A_S, B_S, N] =  GoldenRatio(a, b, f, eps)
 
             x1 = b - tau * l;
             f1 = f(x1);
-            n = n + 1;
+            N = N + 1;
         end
-
-        if (l < 2 * eps)
+        
+        % Проверка условия выбора начальных точек для метода парабол
+        if (x1 < x2) && (x2 < b) && (f2 <= f1) && (f2 <= f(b))
+            X1 = x1; 
+            X2 = x2; 
+            X3 = b;
+            break;
+        elseif (a < x1) && (x1 < x2) && (f1 <= f(a)) && (f1 <= f2)
+            X1 = a; 
+            X2 = x1; 
+            X3 = x2;
             break;
         end
-    end
-    
-    A = a;
-    B = b;
-    C = (a + b) / 2;
-    N = n;
+     end
 end
