@@ -17,31 +17,26 @@ function lab3()
     fprintf("---|----------|----|---------|--------\n");
     
     figure('Units', 'normalized', 'OuterPosition', [0 0 1 1]);
-    title('Метод поразрядного поиска');
-    tiledlayout(2, 2);
-    
+    title('Метод парабол');
+
     for i = 1:length(eps)
         % Вычисление точки минимума и минимума функции
-        [X1, X2, X3, A_S, B_S, N1] = GoldenRatio(a, b, f);
-        [X0, F0, L_S, R_S, N2] = ParabolaMethod(X1, X2, X3, f, eps(i));
-
-        A_S = [A_S, L_S];
-        B_S = [B_S, R_S];
+        [X0, F0, A_S, B_S, N] = ParabolaMethod(a, b, f, eps(i));
         
         % Вывод строки таблицы результатов вычислений
         fprintf("%2i | %5f | %2i | %5.5f | %5.5f\n", ...
-            i, eps(i), N1 + N2, X0, F0);
+            i, eps(i), N, X0, F0);
         
         % Вывод графика для данной точности
-        ax = nexttile;
+        subplot(2, 2, i);
         % Целевая функция
-        plot(ax, X, Y, '-b','LineWidth',1.5);
+        plot(X, Y, '-b','LineWidth',1.5);
         hold on;
         % Последовательность приближений
-        plot(ax, [A_S, B_S], [f(A_S), f(B_S)], '*g','LineWidth', 2);
+        plot([A_S, B_S], [f(A_S), f(B_S)], '*g','LineWidth', 2);
         % Точка минимума
-        plot(ax, X0, F0, '*r','LineWidth', 4);
-        title(ax, sprintf("Точность Eps = %2.0e", eps(i)));
+        plot(X0, F0, '*r','LineWidth', 4);
+        title(sprintf("Точность Eps = %2.0e", eps(i)));
         legend('Целевая функция', 'Последовательность приближений', ...
             'Точка минимума');
     end
@@ -49,22 +44,15 @@ function lab3()
 end
 
 % Метод парабол
-function [X, F, A_S, B_S, N] =  ParabolaMethod(x1, x2, x3, f, eps)
-    arguments
-        x1    double           % Первая начальная точка (левая граница отрезка)
-        x2    double           % Вторая начальная точка (внутренняя точка отрезка)
-        x3   double            % Третья начальная точка (правая граница отрезка)
-        f    function_handle   % Целевая функция
-        eps  double            % Точность
-    end
+function [X, F, A_S, B_S, N] =  ParabolaMethod(a, b, f, eps)
+    [X0, F0, A_S, B_S, N] = GoldenRatio(a, b, f);
     
-    A_S = [];
-    B_S = [];
+    [x1, x2, x3] = deal(X0(1), X0(2), X0(3));
+    [f1, f2, f3] = deal(F0(1), F0(2), F0(3));
     
-    f1 = f(x1); f2 = f(x2); f3 = f(x3);
     x_curr = x2;
     f_s = f2;
-    N = 3; % Число обращений к целевой функции
+    is_first_iter = true;
     
     % Повторять, пока отрезок или разность между старым
     % и новым значением f(x*) не станет меньше точности
@@ -82,27 +70,32 @@ function [X, F, A_S, B_S, N] =  ParabolaMethod(x1, x2, x3, f, eps)
         
         % Вычисление точки минимума аппроксимирующей параболы
         x_prev = x_curr;
-        x_curr = 0.5 * (f1*r23 + f2*r31 + f3*r12) / (f1*s23 + f2*s31 + f3*s12);
-        f_s = f(x_curr); N = N + 1;
+        x_curr = 0.5 * (f1*r23 + f2*r31 + f3*r12) / ...
+            (f1*s23 + f2*s31 + f3*s12);
         
-        % Проверка условия окончания поиска
-        if (x3 - x1) <= eps || abs(x_prev - x_curr) <= eps
+        % Проверка условия окончания поиска (на всех итерациях кроме первой)
+        if is_first_iter
+            is_first_iter = false;
+        elseif abs(x_prev - x_curr) <= eps
             break;
         end
+        
+        f_s = f(x_curr); 
+        N = N + 1;
         
         % Выбор тройки точек для следующей итерации
         if x_curr >= x2 && x_curr <= x3
             if f_s <= f2
-                x1 = x2; x2 = x_curr;
-                f1 = f2; f2 = f_s;
+                x1 = x2; f1 = f2;
+                x2 = x_curr; f2 = f_s;
             else
                 x3 = x_curr;
                 f3 = f_s;
             end
         elseif x_curr >= x1 && x_curr <= x2
             if f_s <= f2
-                x3 = x2; x2 = x_curr;
-                f3 = f2; f2 = f_s;
+                x3 = x2; f3 = f2; 
+                x2 = x_curr; f2 = f_s;
             else
                 x1 = x_curr;
                 f1 = f_s;
@@ -114,14 +107,8 @@ function [X, F, A_S, B_S, N] =  ParabolaMethod(x1, x2, x3, f, eps)
     F = f_s;
 end
 
-% Метод золотого сечения
-function [X1, X2, X3, A_S, B_S, N] =  GoldenRatio(a, b, f)
-    arguments
-        a   double           % Левая граница отрезка
-        b   double           % Левая граница отрезка
-        f   function_handle  % Целевая функция
-    end
-    
+% Метод золотого сечения для выбора начальных точек метода парабол
+function [X, F,  A_S, B_S, N] =  GoldenRatio(a, b, f)
     tau = (5^0.5 - 1) / 2;
 
     A_S = [];
@@ -141,6 +128,19 @@ function [X1, X2, X3, A_S, B_S, N] =  GoldenRatio(a, b, f)
     while true
         A_S = [A_S, a];
         B_S = [B_S, b];
+        
+        % Проверка условия выбора начальных точек для метода парабол
+        if (x1 < x2) && (x2 < b) && (f2 <= f1) && (f2 <= f(b))
+            X = [x1, x2, b];
+            F = [f1, f2, f(b)];
+            N = N + 1;
+            break;
+        elseif (a < x1) && (x1 < x2) && (f1 <= f(a)) && (f1 <= f2)
+            X = [a, x1, x2];
+            F = [f(a), f1, f2];
+            N = N + 1;
+            break;
+        end
         
         % Выбор новых точек для следующей итерации
         if (f1 >= f2)
@@ -163,19 +163,6 @@ function [X1, X2, X3, A_S, B_S, N] =  GoldenRatio(a, b, f)
             x1 = b - tau * l;
             f1 = f(x1);
             N = N + 1;
-        end
-        
-        % Проверка условия выбора начальных точек для метода парабол
-        if (x1 < x2) && (x2 < b) && (f2 <= f1) && (f2 <= f(b))
-            X1 = x1; 
-            X2 = x2; 
-            X3 = b;
-            break;
-        elseif (a < x1) && (x1 < x2) && (f1 <= f(a)) && (f1 <= f2)
-            X1 = a; 
-            X2 = x1; 
-            X3 = x2;
-            break;
         end
      end
 end
