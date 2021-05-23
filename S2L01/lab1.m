@@ -22,11 +22,11 @@ function lab1()
     
     for i = 1:length(eps)
         % Вычисление точки минимума и минимума функции
-        [X0, F0, X_S, F_S] = BitwiseSearch(0, 1, f, eps(i));
+        [X0, F0, X_S, F_S, N] = BitwiseSearch(0, 1, f, eps(i));
         
         % Вывод строки таблицы результатов вычислений
         fprintf("%2i | %5f | %2i | %5.5f | %5.5f\n", ...
-            i, eps(i), length(X_S), X0, F0);
+            i, eps(i), N, X0, F0);
         
         % Вывод графика для данной точности
         ax = nexttile;
@@ -45,7 +45,7 @@ function lab1()
 end
 
 % Метод поразрядного поиска
-function [X, F, X_S, F_S] = BitwiseSearch(a, b, f, eps)
+function [X, F, X_S, F_S, N] = BitwiseSearch(a, b, f, eps)
     arguments
         a   double           % Левая граница отрезка
         b   double           % Левая граница отрезка
@@ -57,6 +57,7 @@ function [X, F, X_S, F_S] = BitwiseSearch(a, b, f, eps)
 
     x0 = a;      % Начальное приближение точки минимума
     f0 = f(x0);  % Начальное приближение минимума функции
+    N = 1;
     
     X_S = [];    % Массив всех приближений точки минимума
     F_S = [];    % Массив всех приближений минимума функции
@@ -73,6 +74,7 @@ function [X, F, X_S, F_S] = BitwiseSearch(a, b, f, eps)
 
         x1 = x0 + delta;
         f1 = f(x1);
+        N = N + 1;
 
         if (f1 < f0 && x1 > a && x1 < b)
             continue;
