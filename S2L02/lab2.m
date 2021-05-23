@@ -22,11 +22,11 @@ function lab2()
     
     for i = 1:length(eps)
         % Вычисление точки минимума и минимума функции
-        [X0, F0, A_S, B_S] = GoldenRatio(0, 1, f, eps(i));
+        [X0, F0, A_S, B_S, N] = GoldenRatio(0, 1, f, eps(i));
         
         % Вывод строки таблицы результатов вычислений
         fprintf("%2i | %5f | %2i | %5.5f | %5.5f\n", ...
-            i, eps(i), length(A_S) + 1, X0, F0);
+            i, eps(i), N, X0, F0);
         
         % Вывод графика для данной точности
         ax = nexttile;
@@ -44,7 +44,7 @@ function lab2()
     
 end
 
-function [X, F, A_S, B_S] = GoldenRatio(a, b, f, eps)
+function [X, F, A_S, B_S, N] = GoldenRatio(a, b, f, eps)
     arguments
         a   double           % Левая граница отрезка
         b   double           % Левая граница отрезка
@@ -64,6 +64,7 @@ function [X, F, A_S, B_S] = GoldenRatio(a, b, f, eps)
 
     f1 = f(x1);
     f2 = f(x2);
+    N = 2;
 
     while true
         A_S = [A_S, a];
@@ -88,6 +89,8 @@ function [X, F, A_S, B_S] = GoldenRatio(a, b, f, eps)
             x1 = b - tau * l;
             f1 = f(x1);
         end
+        
+        N = N + 1;
 
         if (l < 2 * eps)
             break;
@@ -96,4 +99,5 @@ function [X, F, A_S, B_S] = GoldenRatio(a, b, f, eps)
 
     X = (a + b) / 2.0;
     F = f(X);
+    N = N + 1;
 end
