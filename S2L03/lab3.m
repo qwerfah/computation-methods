@@ -48,11 +48,12 @@ function lab3()
     
 end
 
+% Метод парабол
 function [X, F, A_S, B_S, N] =  ParabolaMethod(x1, x2, x3, f, eps)
     arguments
-        x1    double
-        x2    double
-        x3   double           % Левая граница отрезка
+        x1    double           % Первая начальная точка (левая граница отрезка)
+        x2    double           % Вторая начальная точка (внутренняя точка отрезка)
+        x3   double            % Третья начальная точка (правая граница отрезка)
         f    function_handle   % Целевая функция
         eps  double            % Точность
     end
@@ -113,6 +114,7 @@ function [X, F, A_S, B_S, N] =  ParabolaMethod(x1, x2, x3, f, eps)
     F = f_s;
 end
 
+% Метод золотого сечения
 function [X1, X2, X3, A_S, B_S, N] =  GoldenRatio(a, b, f)
     arguments
         a   double           % Левая граница отрезка
@@ -127,6 +129,7 @@ function [X1, X2, X3, A_S, B_S, N] =  GoldenRatio(a, b, f)
 
     l = b - a;
 
+    % Вычисление пробных точек
     x1 = b - tau * l; 
     x2 = a + tau * l; 
 
@@ -138,7 +141,8 @@ function [X1, X2, X3, A_S, B_S, N] =  GoldenRatio(a, b, f)
     while true
         A_S = [A_S, a];
         B_S = [B_S, b];
-
+        
+        % Выбор новых точек для следующей итерации
         if (f1 >= f2)
             a = x1;
             l = b - a;
